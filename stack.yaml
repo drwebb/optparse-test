@@ -1,0 +1,7 @@
+flags: {}
+packages:
+- optparse-applicative/
+- optparse-simple
+- optparse-test/
+extra-deps: []
+resolver: lts-3.4

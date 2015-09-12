@@ -1,0 +1,6 @@
+[submodule "optparse-simple"]
+	path = optparse-simple
+	url = https://github.com/fpco/optparse-simple
+[submodule "optparse-applicative"]
+	path = optparse-applicative
+	url = https://github.com/pcapriotti/optparse-applicative
