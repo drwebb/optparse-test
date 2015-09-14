@@ -31,8 +31,8 @@ main = do
         Left (exitCode :: ExitCode) -> do
             throwIO exitCode
         Right (global,run) -> do
-            print "Sucessful Run, options are"
-            
+            run global
+
 
 globalParser :: Parser GlobalOpts
 globalParser = 
