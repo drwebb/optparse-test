@@ -3,22 +3,21 @@ module Main where
 import Test.Hspec
 import System.Process
 import System.Exit
+import Control.Monad (forM_)
+import Data.List (permutations)
+
+
+argumentPs :: [[String]]
+argumentPs = permutations ["build", "--global-foo", "--build-foo"]
 
 main :: IO ()
-
 main =
     hspec $
     before stackBuild $
-    do describe "Optparse tests" $
-           do it "No options case" $
-                  do exit <- runExe [""]
-                     do exit `shouldBe` ExitSuccess
-              it "foocmd" $
-                  do exit <- runExe ["foocmd"]
-                     do exit `shouldBe` ExitSuccess
-              it "--bar foocmd" $
-                  do exit <- runExe ["--bar", "foo"]
-                     do exit `shouldBe` ExitSuccess
+       describe "Optparse tests" $ forM_ argumentPs
+           (\argCase ->  it (unwords argCase) $ do
+                exit <- runExe argCase
+                exit `shouldBe` ExitSuccess)
 
 stackBuild :: IO ()
 stackBuild =

@@ -10,8 +10,8 @@ import Control.Exception
 import System.Exit
 
 data Command = Build
-data BuildOpts = BuildOpts {buildFoo :: String}
-data GlobalOpts = GlobalOpts {globalFoo :: String}
+data BuildOpts = BuildOpts {buildFoo :: Bool} deriving Show
+data GlobalOpts = GlobalOpts {globalFoo :: Bool} deriving Show
 
 main :: IO ()
 main = do
@@ -31,13 +31,28 @@ main = do
         Left (exitCode :: ExitCode) -> do
             throwIO exitCode
         Right (global,run) -> do
-            print "sucessfulRun"
+            print "Sucessful Run, options are"
+            
 
 globalParser :: Parser GlobalOpts
-globalParser = undefined
+globalParser = 
+  GlobalOpts <$> globalFoo
+  where globalFoo =
+          boolFlags
+            False
+            "global-foo"
+            "global foo flag"
+            idm
 
 buildOptsParser :: Command -> Parser BuildOpts
-buildOptsParser _ = undefined
+buildOptsParser _ =
+  BuildOpts <$> buildFoo
+  where buildFoo =
+          boolFlags
+            False
+            "build-foo"
+            "build foo flag"
+            idm
 
 buildCmd :: BuildOpts -> GlobalOpts -> IO ()
 buildCmd _ _ = return ()
