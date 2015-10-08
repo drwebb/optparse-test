@@ -5,10 +5,11 @@ import System.Process
 import System.Exit
 import Control.Monad (forM_)
 import Data.List (permutations)
-
+import Debug.Trace
 
 argumentPs :: [[String]]
-argumentPs = permutations ["build", "--global-foo", "--build-foo"]
+argumentPs = -- permutations ["build", "--global-foo", "--build-foo"] ++
+             permutations ["build", "--global-foo", "--build-foo", "--global-bar"]
 
 main :: IO ()
 main =
@@ -27,9 +28,11 @@ stackBuild =
 
 runExe :: [String] -> IO ExitCode
 runExe options = do
-    (exitCode,_,_) <-
+    (exitCode,stdout,stderr) <-
         readProcessWithExitCode
             "stack"
             (["exec", "--", "optparse-test-exe"] ++
              options) ""
+    traceIO stdout
+    traceIO stderr
     return exitCode

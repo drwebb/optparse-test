@@ -29,7 +29,6 @@ library
   default-language:    Haskell2010
 
 executable optparse-test-exe
-  type:                exitcode-stdio-1.0
   hs-source-dirs:      app
   main-is:             Main.hs
   build-depends:       base

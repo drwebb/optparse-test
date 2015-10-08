@@ -8,21 +8,29 @@ import Options.Applicative.Simple
 import Options.Applicative.Types (readerAsk)
 import Control.Exception
 import System.Exit
+import Debug.Trace
+import Data.Monoid
 
-data Command = Build
-data BuildOpts = BuildOpts {buildFoo :: Bool} deriving Show
-data GlobalOpts = GlobalOpts {globalFoo :: Bool} deriving Show
+data Command = Build deriving Show
+data BuildOpts = BuildOpts {buildFoo :: Bool, innerGlobalOpts :: GlobalOpts} deriving Show
+data GlobalOpts = GlobalOpts {globalFoo :: Bool, globalBar :: Bool} deriving (Show)
+
+instance Monoid GlobalOpts where
+  mempty = GlobalOpts {globalFoo = False, globalBar = False}
+  mappend (GlobalOpts fooL barL) (GlobalOpts fooR barR) = 
+    GlobalOpts ((||) fooL fooR) ((||) barL barR)
 
 main :: IO ()
 main = do
+    traceIO "At main"
     eGlobalRun <-
         try $
-        simpleOptions
-            "something1"
+        simpleOptions'
+            "somethin1"
             "something2"
             "something3"
             globalParser
-            (do addCommand
+            (addCommand
                     "build"
                     "description of build"
                     buildCmd
@@ -35,18 +43,18 @@ main = do
 
 
 globalParser :: Parser GlobalOpts
-globalParser = 
-  GlobalOpts <$> globalFoo
-  where globalFoo =
-          boolFlags
-            False
-            "global-foo"
-            "global foo flag"
-            idm
+globalParser =
+    GlobalOpts <$> globalFoo <*> globalBar
+  where
+    globalFoo =
+        boolFlags False "global-foo" "global foo flag" idm
+    globalBar =
+        boolFlags False "global-bar" "global bar flag" idm
+
 
 buildOptsParser :: Command -> Parser BuildOpts
 buildOptsParser _ =
-  BuildOpts <$> buildFoo
+  BuildOpts <$> buildFoo <*> globalParser
   where buildFoo =
           boolFlags
             False
@@ -55,4 +63,6 @@ buildOptsParser _ =
             idm
 
 buildCmd :: BuildOpts -> GlobalOpts -> IO ()
-buildCmd _ _ = return ()
+buildCmd bOpts gOpts =
+    print bOpts >> print gOpts >>
+    return ()
