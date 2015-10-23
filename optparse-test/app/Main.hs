@@ -1,4 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 module Main where
 
@@ -11,14 +12,20 @@ import System.Exit
 import Debug.Trace
 import Data.Monoid
 
-data Command = Build deriving Show
-data BuildOpts = BuildOpts {buildFoo :: Bool, innerGlobalOpts :: GlobalOpts} deriving Show
-data GlobalOpts = GlobalOpts {globalFoo :: Bool, globalBar :: Bool} deriving (Show)
+data GlobalOpts = GlobalOpts {globalFoo :: Bool, globalBar :: Bool, globalResolver :: Maybe AbstractResolver} deriving (Show)
 
 instance Monoid GlobalOpts where
   mempty = GlobalOpts {globalFoo = False, globalBar = False}
-  mappend (GlobalOpts fooL barL) (GlobalOpts fooR barR) = 
-    GlobalOpts ((||) fooL fooR) ((||) barL barR)
+  mappend (GlobalOpts fooL barL res) (GlobalOpts fooR barR resR) = 
+    GlobalOpts ((||) fooL fooR) ((||) barL barR) resR
+
+data Command = Build deriving Show
+
+data BuildOpts = BuildOpts {buildFoo :: Bool, innerGlobalOpts :: GlobalOpts} deriving Show
+
+instance HasOuter BuildOpts GlobalOpts where
+  getOuter = innerGlobalOpts
+  applyInnerToOuter bOpts gOpts = getOuter bOpts <> gOpts
 
 main :: IO ()
 main = do
@@ -44,7 +51,7 @@ main = do
 
 globalParser :: Parser GlobalOpts
 globalParser =
-    GlobalOpts <$> globalFoo <*> globalBar
+    GlobalOpts <$> globalFoo <*> globalBar <*> abstractResolverOptsParser
   where
     globalFoo =
         boolFlags False "global-foo" "global foo flag" idm
